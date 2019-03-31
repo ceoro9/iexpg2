@@ -1,14 +1,19 @@
 defmodule Pg2.GroupRunner do
   use GenServer
 
-  def start_link(default) do
-    # TODO: may be add name
-    GenServer.start_link(__MODULE__, default)
+  @process_name_suffix "instance_"
+
+  def start_link([group_name | _]) do
+    GenServer.start_link(__MODULE__, [], name: get_process_name(group_name))
   end
 
   @impl true
   def init(_) do
     {:ok, %{}}
+  end
+
+  defp get_process_name(group_name) do
+    (@process_name_suffix <> group_name) |> String.to_atom()
   end
 
   @impl true
@@ -25,9 +30,20 @@ defmodule Pg2.GroupRunner do
     {:noreply, state}
   end
 
-  defp do_handle_call(_message) do
+  defp do_handle_call(message) do
     # TODO:
     # iterate over running processes and put message to their mailbox
+    IO.puts("got new message: ")
+    IO.inspect(message)
     {:ok}
+  end
+
+  def send_message(group_name, message) do
+    # pass message to all runners in cluster
+    GenServer.multi_call(
+      Node.list([:this, :visible]),
+      get_process_name(group_name),
+      {:call, message}
+    )
   end
 end

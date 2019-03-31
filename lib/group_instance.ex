@@ -1,21 +1,15 @@
 defmodule Pg2.GroupInstance do
   use Supervisor
 
-  @process_name_suffix "instance_"
-
-  def start_link(group_name) do
+  def start_link([group_name | _]) do
     Supervisor.start_link(
       __MODULE__,
-      group_name,
-      name: get_process_name(group_name)
+      group_name
+      # TODO: give name to terminate.
     )
   end
 
-  def init(_) do
-    Supervisor.init([Pg2.GroupRunner], strategy: :one_for_one)
-  end
-
-  def get_process_name([group_name]) do
-    (@process_name_suffix <> group_name) |> String.to_atom()
+  def init(group_name) do
+    Supervisor.init([{Pg2.GroupRunner, [group_name]}], strategy: :one_for_one)
   end
 end
