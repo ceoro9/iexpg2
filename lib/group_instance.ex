@@ -5,7 +5,6 @@ defmodule Pg2.GroupInstance do
     Supervisor.start_link(
       __MODULE__,
       group_name
-      # TODO: give name to terminate.
     )
   end
 

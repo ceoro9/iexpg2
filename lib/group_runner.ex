@@ -102,7 +102,10 @@ defmodule Pg2.GroupRunner do
   end
 
   def group_exists?(group_name) do
-    get_process_name(group_name) |> Process.alive?()
+    case get_process_name(group_name) |> Process.whereis() do
+      nil -> false
+      _ -> true
+    end
   end
 
   def process_in_group?(group_name, pid) do
